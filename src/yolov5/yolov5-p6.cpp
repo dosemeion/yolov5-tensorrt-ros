@@ -70,7 +70,8 @@ void doInference(const sensor_msgs::ImageConstPtr& img_data, IExecutionContext* 
 
     std::vector<Yolo::Detection> batch_res;
     nms(batch_res, &prob[0], CONF_THRESH, NMS_THRESH);
-    
+    xywh2xyxy(batch_res);
+    scale_coords(batch_res, 1280, 720); // 摄像头宽度1280，高度720
     n_camera_obj::BoundingBox box;
     std::vector<n_camera_obj::BoundingBox> boxes;
     n_camera_obj::BoundingBoxes pub_box;
@@ -92,12 +93,7 @@ void doInference(const sensor_msgs::ImageConstPtr& img_data, IExecutionContext* 
         box.camera_obj_prob = batch_res[j].conf;
         boxes.push_back(box);
         num_obj += 1;
-        // cv::Rect r = get_rect(img, batch_res[j].bbox);
-        // auto x = r.x;
-        // auto y = r.y;
-        // auto w = r.width;
-        // auto h = r.height;
-        // if (x <= 0 || y <= 0 || w <= 0 || h <= 0) continue;
+        // cv::Rect r = cv::Rect(batch_res[j].bbox[0], batch_res[j].bbox[1], batch_res[j].bbox[2] - batch_res[j].bbox[0], batch_res[j].bbox[3] - batch_res[j].bbox[1]);
         // cv::rectangle(img, r, cv::Scalar(0x27, 0xC1, 0x36), 2);
         // cv::putText(img, std::to_string((int)batch_res[j].class_id), cv::Point(r.x, r.y - 1), cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(0xFF, 0xFF, 0xFF), 2);
     }
